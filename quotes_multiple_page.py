@@ -2,47 +2,49 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
- 
-file_name = "my_quotes_multiple_page.csv"
+file_name = "all_quotes.csv"
+base_url = "http://quotes.toscrape.com/page/{}/"
 
- 
-url = "http://quotes.toscrape.com"
-response = requests.get(url)
+data = []  # This will store all rows of scraped data
 
- 
-soup = BeautifulSoup(response.text, "html.parser")
+# Loop through page numbers (start from 1)
+for page_num in range(1, 100):  # 100 is just a large upper limit
+    print(f"Scraping page {page_num}...")
 
- 
-quotes = soup.find_all("div", class_="quote")
+    url = base_url.format(page_num)
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "html.parser")
 
- 
-data = []
+    quotes = soup.find_all("div", class_="quote")
 
- 
-for quote in quotes:
- 
-    text_element = quote.find("span", class_="text")
-    text = text_element.text
-    
- 
-    author_element = quote.find("small", class_="author")
-    author = author_element.text
- 
-    tag_elements = quote.find_all("a", class_="tag")   
-    tags = []  
- 
-    for tag in tag_elements:
-        tags.append(tag.text)
+    # If there are no quotes, we've reached the last page
+    if not quotes:
+        print("No more quotes found. Stopping.")
+        break
 
- 
-    tags_joined = ", ".join(tags)
- 
-    row = {"Quote": text, "Author": author, "Tags": tags_joined}
-    data.append(row)
+    # Loop through each quote block on the current page
+    for quote in quotes:
+        text_element = quote.find("span", class_="text")
+        author_element = quote.find("small", class_="author")
+        tag_elements = quote.find_all("a", class_="tag")
 
- 
+        # Get quote text and author name
+        text = text_element.text
+        author = author_element.text
+
+        # Extract all tag names
+        tags = []
+        for tag in tag_elements:
+            tags.append(tag.text)
+
+        tags_joined = ", ".join(tags)
+
+        # Add to data list
+        row = {"Quote": text, "Author": author, "Tags": tags_joined}
+        data.append(row)
+
+# Save all collected data to CSV
 df = pd.DataFrame(data)
 df.to_csv(file_name, index=False)
 
- 
-print(f"Quotes saved to '{file_name}' successfully!")
+print(f"\nAll quotes saved to '{file_name}' successfully!")
