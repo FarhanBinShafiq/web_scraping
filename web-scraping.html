@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selenium Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Raleway', 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex: 1 0 auto;
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #1a3c5e;
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+            animation: fadeIn 1s ease-in;
+            font-weight: 700;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar li {
+            margin: 15px 0;
+            opacity: 0;
+            animation: slideIn 0.5s ease forwards;
+            animation-delay: calc(0.1s * var(--i));
+        }
+
+        .sidebar a {
+            color: #e6f3ff;
+            text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s;
+            font-weight: 400;
+        }
+
+        .sidebar a:hover {
+            color: #ffd700;
+            padding-left: 10px;
+        }
+
+        .content {
+            margin-left: 270px;
+            padding: 40px;
+            max-width: 900px;
+            flex: 1;
+        }
+
+        .section {
+            background-color: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            opacity: 0;
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        .section h1 {
+            color: #1a3c5e;
+            cursor: pointer;
+            margin-top: 0;
+            transition: color 0.3s;
+            font-weight: 700;
+        }
+
+        .section h1:hover {
+            color: #ffd700;
+        }
+
+        .section h2 {
+            color: #2c5282;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background-color: #f7fafc;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            border-left: 4px solid #ffd700;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .footer {
+            background-color: #1a3c5e;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            flex-shrink: 0;
+            width: 100%;
+            font-weight: 400;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                z-index: 1000;
+                background: #ffd700;
+                border: none;
+                padding: 10px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .menu-toggle { display: none; }
+            .sidebar { transform: translateX(0); }
+            .container { flex-direction: row; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰ Menu</button>
+        <div class="sidebar">
+            <h2>Selenium Guide</h2>
+            <ul>
+                <li style="--i:1"><a href="#section1">1. Getting Started</a></li>
+                <li style="--i:2"><a href="#section2">2. Finding Stuff</a></li>
+                <li style="--i:3"><a href="#section3">3. Navigation</a></li>
+                <li style="--i:4"><a href="#section4">4. Waiting Smartly</a></li>
+                <li style="--i:5"><a href="#section5">5. Interacting</a></li>
+                <li style="--i:6"><a href="#section6">6. Intermediate Skills</a></li>
+                <li style="--i:7"><a href="#section7">7. Advanced Selenium</a></li>
+                <li style="--i:8"><a href="#section8">8. Full Project</a></li>
+            </ul>
+        </div>
+
+        <div class="content">
+            <div class="section" id="section1">
+                <h1 onclick="toggleSection(this)">Section 1: Getting Started with Selenium</h1>
+                <div class="section-content">
+                    <h2>What is Selenium?</h2>
+                    <p>Selenium is like a robot that controls a web browser for you. You tell it what to do (open a site, click a button, grab text) using Python code. It's great for scraping dynamic websites or automating tasks (e.g., filling forms).</p>
+                    
+                    <h2>What You Need</h2>
+                    <ol>
+                        <li>Python: You've got this installed</li>
+                        <li>Selenium: Install it with <code>pip install selenium</code></li>
+                        <li>WebDriver Manager: Install with <code>pip install webdriver-manager</code></li>
+                        <li>Chrome Browser: Already on your computer</li>
+                    </ol>
+
+                    <h2>Basic Example: Open a Website</h2>
+                    <p>Let's start simple—open Google and grab the page title.</p>
+                    <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
+# Setup the robot (Chrome browser)
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+
+# Tell the robot to visit Google
+driver.get("https://www.google.com")
+
+# Get the page title (what's in the browser tab)
+title = driver.title
+print("Page Title:", title)
+
+# Close the browser
+driver.quit()
+                    </div>
+                    <p><strong>What Happens:</strong></p>
+                    <ul>
+                        <li><code>ChromeDriverManager().install()</code>: Sets up the Chrome robot (downloads ChromeDriver if needed).</li>
+                        <li><code>webdriver.Chrome</code>: Opens Chrome.</li>
+                        <li><code>driver.get</code>: Goes to Google.</li>
+                        <li><code>driver.title</code>: Grabs "Google" (the tab title).</li>
+                        <li><code>driver.quit()</code>: Closes the browser.</li>
+                    </ul>
+                    <p><strong>Try It:</strong> Run this. You'll see Chrome open, visit Google, and print "Page Title: Google".</p>
+                </div>
+            </div>
+
+            <div class="section" id="section2">
+                <h1 onclick="toggleSection(this)">Section 2: Finding Stuff on a Page</h1>
+                <div class="section-content">
+                    <h2>How Selenium Finds Things</h2>
+                    <p>Websites are like maps—Selenium finds "treasures" (text, buttons, links) using locators (like GPS). You've used By.CSS_SELECTOR; let's learn more.</p>
+                    
+                    <h2>Locators</h2>
+                    <ol>
+                        <li>By.ID: Finds by id (unique name)</li>
+                        <li>By.CLASS_NAME: Finds by class (e.g., product_pod)</li>
+                        <li>By.TAG_NAME: Finds by tag (e.g., div, a)</li>
+                        <li>By.CSS_SELECTOR: Uses CSS rules (e.g., h3 a)</li>
+                        <li>By.XPATH: Uses a path (e.g., //h3/a)</li>
+                    </ol>
+
+                    <h2>Example: Find a Title</h2>
+                    <p>Let's scrape a quote from http://quotes.toscrape.com/.</p>
+                    <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+# Setup Chrome
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+
+# Open the quotes site
+driver.get("http://quotes.toscrape.com/")
+
+# Find the first quote
+quote = driver.find_element(By.CSS_SELECTOR, "div.quote span.text").text
+author = driver.find_element(By.CSS_SELECTOR, "div.quote small.author").text
+print("Quote:", quote)
+print("Author:", author)
+
+# Close the browser
+driver.quit()
+                    </div>
+                    <p><strong>What Happens:</strong></p>
+                    <ul>
+                        <li><code>div.quote</code>: Finds the quote box.</li>
+                        <li><code>span.text</code>: Gets the quote text (e.g., "The world as we...").</li>
+                        <li><code>small.author</code>: Gets the author (e.g., "Albert Einstein").</li>
+                    </ul>
+                    <p><strong>Try It:</strong> Run this. You'll see one quote and its author printed.</p>
+                </div>
+            </div>
+
+            <div class="section" id="section3">
+                <h1 onclick="toggleSection(this)">Section 3: Moving Around (Navigation)</h1>
+                <div class="section-content">
+                    <h2>Clicking and Pagination</h2>
+                    <p>Websites have buttons—like "Next" on books.toscrape.com. Let's click it.</p>
+                    <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+import time
+from webdriver_manager.chrome import ChromeDriverManager
+
+# Setup Chrome
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+
+# Open bookstore
+driver.get("https://books.toscrape.com/")
+
+# Click the "Next" button
+next_button = driver.find_element(By.CSS_SELECTOR, "li.next a")
+next_button.click()
+time.sleep(2)  # Wait for the page to load
+print("New page title:", driver.title)
+
+# Close
+driver.quit()
+                    </div>
+                    <p><strong>What Happens:</strong> Finds the "Next" button and clicks it, moving to page 2.</p>
+                    <p><strong>Try It:</strong> Run this. Watch Chrome go to the next page.</p>
+
+                    <h2>Full Pagination Example</h2>
+                    <p>Scrape all books across pages:</p>
+                    <div class="code-block">
+data = []
+while True:
+    books = driver.find_elements(By.CSS_SELECTOR, "article.product_pod")
+    for book in books:
+        title = book.find_element(By.CSS_SELECTOR, "h3 a").get_attribute("title")
+        data.append({"Title": title})
+    try:
+        next_button = driver.find_element(By.CSS_SELECTOR, "li.next a")
+        next_button.click()
+        time.sleep(2)
+    except:
+        print("Done with all pages!")
+        break
+print(f"Found {len(data)} books")
+                    </div>
+                    <p><strong>What Happens:</strong> Loops through all pages, collecting titles.</p>
+                </div>
+            </div>
+
+            <div class="section" id="section4">
+                <h1 onclick="toggleSection(this)">Section 4: Waiting Smartly</h1>
+                <div class="section-content">
+                    <h2>Why Wait?</h2>
+                    <p>Pages take time to load. time.sleep works but isn't smart—Selenium has better tools.</p>
+                    
+                    <h2>Explicit Wait</h2>
+                    <p>Wait for something specific:</p>
+                    <div class="code-block">
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# Wait for books to load
+books = WebDriverWait(driver, 10).until(
+    EC.presence_of_all_elements_located((By.CSS_SELECTOR, "article.product_pod")))
+print(f"Found {len(books)} books on this page")
+                    </div>
+                    <p><strong>What Happens:</strong> Waits up to 10 seconds for books to appear, then proceeds.</p>
+                    <p><strong>Try It:</strong> Replace time.sleep in your script with this.</p>
+
+                    <h2>Implicit Wait</h2>
+                    <p>Set a default wait for all finds:</p>
+                    <div class="code-block">
+driver.implicitly_wait(10)  # Wait up to 10 seconds for any element
+books = driver.find_elements(By.CSS_SELECTOR, "article.product_pod")
+                    </div>
+                    <p><strong>Difference:</strong> Applies globally, less flexible than explicit wait.</p>
+                </div>
+            </div>
+
+            <div class="section" id="section5">
+                <h1 onclick="toggleSection(this)">Section 5: Interacting with Pages</h1>
+                <div class="section-content">
+                    <h2>Typing</h2>
+                    <p>Fill a search box (if the site had one):</p>
+                    <div class="code-block">
+search = driver.find_element(By.NAME, "q")  # Example search field
+search.send_keys("Fiction")
+search.submit()
+time.sleep(2)
+print("Searched for Fiction")
+                    </div>
+
+                    <h2>Scrolling</h2>
+                    <p>Scroll to the bottom:</p>
+                    <div class="code-block">
+driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+time.sleep(2)
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="section6">
+                <h1 onclick="toggleSection(this)">Section 6: Intermediate Skills</h1>
+                <div class="section-content">
+                    <h2>Handling Errors</h2>
+                    <p>Catch missing elements:</p>
+                    <div class="code-block">
+try:
+    title = driver.find_element(By.CSS_SELECTOR, "h3 a").get_attribute("title")
+except Exception:
+    title = "Not Found"
+print("Title:", title)
+                    </div>
+
+                    <h2>Getting Attributes</h2>
+                    <p>Like your title attribute:</p>
+                    <div class="code-block">
+link = driver.find_element(By.CSS_SELECTOR, "h3 a")
+href = link.get_attribute("href")
+print("Link URL:", href)
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="section7">
+                <h1 onclick="toggleSection(this)">Section 7: Advanced Selenium</h1>
+                <div class="section-content">
+                    <h2>Headless Mode</h2>
+                    <p>Run without seeing the browser:</p>
+                    <div class="code-block">
+options = webdriver.ChromeOptions()
+options.add_argument("--headless")
+driver = webdriver.Chrome(service=service, options=options)
+driver.get("https://books.toscrape.com")
+print("Title (headless):", driver.title)
+                    </div>
+                    <p><strong>Why:</strong> Faster, runs in the background.</p>
+
+                    <h2>Frames and Popups</h2>
+                    <p>Switch to a frame (if a site uses them):</p>
+                    <div class="code-block">
+driver.switch_to.frame("frame_id")
+# Do stuff
+driver.switch_to.default_content()  # Back to main page
+                    </div>
+
+                    <h2>Multiple Windows</h2>
+                    <p>Handle new tabs:</p>
+                    <div class="code-block">
+driver.find_element(By.CSS_SELECTOR, "a[target='_blank']").click()
+windows = driver.window_handles
+driver.switch_to.window(windows[1])  # Switch to new tab
+print("New tab title:", driver.title)
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="section8">
+                <h1 onclick="toggleSection(this)">Section 8: Full Project</h1>
+                <div class="section-content">
+                    <p>Let's scrape quotes.toscrape.com with all pages:</p>
+                    <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import pandas as pd
+from webdriver_manager.chrome import ChromeDriverManager
+
+# Setup Chrome (headless)
+options = webdriver.ChromeOptions()
+options.add_argument("--headless")
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service, options=options)
+
+# Open quotes site
+driver.get("http://quotes.toscrape.com/")
+data = []
+
+# Scrape all pages
+while True:
+    quotes = WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.quote")))
+    for quote in quotes:
+        try:
+            text = quote.find_element(By.CSS_SELECTOR, "span.text").text
+            author = quote.find_element(By.CSS_SELECTOR, "small.author").text
+            tags = ", ".join(tag.text for tag in quote.find_elements(By.CSS_SELECTOR, "a.tag"))
+        except:
+            text, author, tags = "Not Found", "Not Found", "Not Found"
+        data.append({"Quote": text, "Author": author, "Tags": tags})
+    try:
+        next_button = driver.find_element(By.CSS_SELECTOR, "li.next a")
+        next_button.click()
+    except:
+        break
+
+# Save and close
+df = pd.DataFrame(data)
+df.to_csv("quotes_full.csv", index=False)
+print(f"Saved {len(data)} quotes")
+driver.quit()
+                    </div>
+                    <p><strong>What Happens:</strong> Scrapes all quotes, authors, and tags across pages, saves them headlessly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 [Your Name]. All rights reserved.</p>
+    </div>
+
+    <script>
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle("hidden");
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector(".sidebar");
+            sidebar.classList.toggle("active");
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll(".section-content");
+            sections.forEach((section, index) => {
+                if (index !== 0) section.classList.add("hidden");
+            });
+        });
+    </script>
+</body>
+</html>

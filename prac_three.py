@@ -10,28 +10,28 @@ service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service)
 
 # Open the paginated e-commerce test site
-driver.get("https://webscraper.io/test-sites/e-commerce/more")
+driver.get("https://books.toscrape.com/")
 
 # Store data
 data = []
 
 # Handle pagination
 while True:
-    products = driver.find_elements(By.CSS_SELECTOR, "div.thumbnail")
+    products = driver.find_elements(By.CSS_SELECTOR, "article.product_pod")
     for product in products:
         try:
-            title = product.find_element(By.CSS_SELECTOR, "a.title").text
-            price = product.find_element(By.CSS_SELECTOR, "h4.price").text
-            description = product.find_element(By.CSS_SELECTOR, "p.description").text
+            book_title = product.find_element(By.CSS_SELECTOR, "h3 a").get_attribute('title')
+            price = product.find_element(By.CSS_SELECTOR, "p.product_color").text
+            
         except:
-            title = "Not Found"
+            book_title = "Not Found"
             price = "Not Found"
-            description = "Not Found"
-        data.append({"Title": title, "Price": price, "Description": description})
+           
+        data.append({"Title":book_title, "Price": price})
     
     # Check for "Load More" button (not a traditional "Next")
     try:
-        load_more = driver.find_element(By.CSS_SELECTOR, "a.btn-load-more")
+        load_more = driver.find_element(By.CSS_SELECTOR, "li.next a")
         load_more.click()
         time.sleep(2)
     except:
@@ -40,7 +40,7 @@ while True:
 
 # Save to CSV
 df = pd.DataFrame(data)
-df.to_csv("ecommerce_paginated.csv", index=False)
+df.to_csv("aginated.csv", index=False)
 
 print(f"Saved {len(data)} products to 'ecommerce_paginated.csv'!")
 
