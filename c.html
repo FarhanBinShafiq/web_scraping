@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selenium Web Scraping Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Raleway', 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex: 1 0 auto;
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #1a3c5e;
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+            animation: fadeIn 1s ease-in;
+            font-weight: 700;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul ul {
+            margin-left: 20px; /* Indent nested list */
+        }
+
+        .sidebar li {
+            margin: 15px 0;
+            opacity: 0;
+            animation: slideIn 0.5s ease forwards;
+            animation-delay: calc(0.1s * var(--i));
+        }
+
+        .sidebar a {
+            color: #e6f3ff;
+            text-decoration: none;
+            transition: color 0.3s, padding-left 0.3s;
+            font-weight: 400;
+        }
+
+        .sidebar a:hover {
+            color: #ffd700;
+            padding-left: 10px;
+        }
+
+        .content {
+            margin-left: 270px;
+            padding: 40px;
+            max-width: 900px;
+            flex: 1;
+        }
+
+        .section {
+            background-color: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            opacity: 0;
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        .section .section {
+            margin-left: 20px;
+            box-shadow: none; /* Remove shadow for nested sections */
+            background-color: #f7fafc; /* Lighter background for distinction */
+        }
+
+        .section h1 {
+            color: #1a3c5e;
+            cursor: pointer;
+            margin-top: 0;
+            transition: color 0.3s;
+            font-weight: 700;
+        }
+
+        .section .section h1 {
+            font-size: 1.5em; /* Smaller for nested sections */
+        }
+
+        .section h1:hover {
+            color: #ffd700;
+        }
+
+        .section h2 {
+            color: #2c5282;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background-color: #f7fafc;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            border-left: 4px solid #ffd700;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .footer {
+            background-color: #1a3c5e;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            flex-shrink: 0;
+            width: 100%;
+            font-weight: 400;
+        }
+
+        /* Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .popup-content h2 {
+            margin-top: 0;
+            color: #1a3c5e;
+            font-weight: 700;
+        }
+
+        .popup-content input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .popup-content button {
+            background: #ffd700;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .popup-content button:hover {
+            background: #e6c200;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                z-index: 1000;
+                background: #ffd700;
+                border: none;
+                padding: 10px;
+                cursor: pointer;
+                border-radius: 5px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .menu-toggle { display: none; }
+            .sidebar { transform: translateX(0); }
+            .container { flex-direction: row; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Popup Overlay -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-content">
+            <h2>Access the Guide</h2>
+            <p>Please enter your email address to view the content.</p>
+            <form id="emailForm" action="mailto:farhan.learning10237@gmail.com" method="POST" enctype="text/plain">
+                <input type="email" id="emailInput" name="email" placeholder="Your Email" required>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" id="mainContent" style="display: none;">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰ Menu</button>
+        <div class="sidebar">
+            <h2>Web Scraping Guide Line</h2>
+            <ul>
+                <li style="--i:1"><a href="#section1">1. HTML, CSS, and JS Scraping</a>
+                    <ul>
+                        <li style="--i:2"><a href="#section1-1">1.1 Basics of HTML Scraping</a></li>
+                        <li style="--i:3"><a href="#section1-2">1.2 Basic CSS Scraping</a></li>
+                        <li style="--i:4"><a href="#section1-3">1.3 Basic JS Scraping</a></li>
+                        <li style="--i:5"><a href="#section1-4">1.4 Intermediate HTML Scraping</a></li>
+                        <li style="--i:6"><a href="#section1-5">1.5 Intermediate CSS Scraping</a></li>
+                        <li style="--i:7"><a href="#section1-6">1.6 Intermediate JS Scraping</a></li>
+                        <li style="--i:8"><a href="#section1-7">1.7 Advanced HTML Scraping</a></li>
+                        <li style="--i:9"><a href="#section1-8">1.8 Advanced CSS Scraping</a></li>
+                        <li style="--i:10"><a href="#section1-9">1.9 Advanced JS Scraping</a></li>
+                    </ul>
+                </li>
+                <li style="--i:11"><a href="#section2">2. Selenium</a>
+                    <ul>
+                        <li style="--i:12"><a href="#section2-1">2.1 Finding Elements</a></li>
+                        <li style="--i:13"><a href="#section2-2">2.2 Navigation</a></li>
+                        <li style="--i:14"><a href="#section2-3">2.3 Waiting Smartly</a></li>
+                        <li style="--i:15"><a href="#section2-4">2.4 Interacting</a></li>
+                        <li style="--i:16"><a href="#section2-5">2.5 Intermediate Skills</a></li>
+                        <li style="--i:17"><a href="#section2-6">2.6 Advanced Selenium</a></li>
+                        <li style="--i:18"><a href="#section2-7">2.7 Full Project</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="content">
+            <div class="section" id="section1">
+                <h1 onclick="toggleSection(this)">Section 1: HTML, CSS, and JS Scraping</h1>
+                <div class="section-content">
+                    <h2>Why Scrape HTML, CSS, and JS?</h2>
+                    <p>HTML gives structure, CSS adds style, and JavaScript brings interactivity. Scraping these lets you extract content, styles, and dynamic data from any webpage.</p>
+
+                    <div class="section" id="section1-1">
+                        <h1 onclick="toggleSection(this)">Section 1.1: Basics of HTML Scraping</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Extract raw HTML content and understand page structure.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/")
+# Get full HTML
+html = driver.page_source
+print(html[:500])  # First 500 characters
+# Get specific element
+quote = driver.find_element(By.TAG_NAME, "div").text
+print("First div content:", quote)
+driver.quit()
+                            </div>
+                            <p><strong>Try It:</strong> Scrape all <code>&lt;p&gt;</code> tags from Quotes to Scrape.</p>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section1-2">
+                        <h1 onclick="toggleSection(this)">Section 1.2: Basic CSS Scraping</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Extract CSS styles or elements based on their styling attributes.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://books.toscrape.com/")
+# Scrape by class
+prices = driver.find_elements(By.CSS_SELECTOR, ".price_color")
+for price in prices[:3]:
+    print("Price:", price.text)
+# Get inline style
+style = driver.find_element(By.CSS_SELECTOR, ".product_pod").get_attribute("style")
+print("Style attribute:", style)
+driver.quit()
+                            </div>
+                            <p><strong>Try It:</strong> Scrape all elements with class <code>star-rating</code> from Books to Scrape.</p>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section1-3">
+                        <h1 onclick="toggleSection(this)">Section 1.3: Basic JS Scraping</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Scrape content generated or modified by JavaScript.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/js/")
+driver.implicitly_wait(5)  # Wait for JS
+quotes = driver.find_elements(By.CLASS_NAME, "quote")
+for quote in quotes[:3]:
+    print("Quote:", quote.text)
+driver.quit()
+                            </div>
+                            <p><strong>Try It:</strong> Scrape quotes from <a href="http://quotes.toscrape.com/js/">quotes.toscrape.com/js/</a>.</p>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section1-4">
+                        <h1 onclick="toggleSection(this)">Section 1.4: Intermediate HTML Scraping</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Parse nested HTML and extract attributes.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://books.toscrape.com/")
+books = driver.find_elements(By.CSS_SELECTOR, "article.product_pod")
+for book in books[:3]:
+    title = book.find_element(By.TAG_NAME, "h3").find_element(By.TAG_NAME, "a").get_attribute("title")
+    print("Book Title:", title)
+driver.quit()
+                            </div>
+                            <p><strong>Try It:</strong> Scrape book titles and their <code>href</code> links from Books to Scrape.</p>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section1-5">
+                        <h1 onclick="toggleSection(this)">Section 1.5: Intermediate CSS Scraping</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Scrape computed styles or external CSS rules.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/")
+quote = driver.find_element(By.CLASS_NAME, "quote")
+color = driver.execute_script("return window.getComputedStyle(arguments[0]).color;", quote)
+print("Quote text color:", color)
+driver.quit()
+                            </div>
+                            <p><strong>Try It:</strong> Scrape the font size of quotes on Quotes to Scrape.</p>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section1-6">
+                        <h1 onclick="toggleSection(this)">Section 1.6: Intermediate JS Scraping</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Interact with JS-driven elements and scrape dynamic data.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/js/")
+next_button = driver.find_element(By.CSS_SELECTOR, "li.next a")
+next_button.click()  # Load next page
+quotes = driver.find_elements(By.CLASS_NAME, "quote")
+print("Second page quote:", quotes[0].text)
+driver.quit()
+                            </div>
+                            <p><strong>Try It:</strong> Click "Next" on Quotes to Scrape (JS version) and scrape the second page.</p>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section1-7">
+                        <h1 onclick="toggleSection(this)">Section 1.7: Advanced HTML Scraping</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Handle complex structures and large-scale scraping.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+from bs4 import BeautifulSoup
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://books.toscrape.com/")
+soup = BeautifulSoup(driver.page_source, "html.parser")
+books = soup.select("article.product_pod")
+for book in books[:3]:
+    print("Title:", book.h3.a["title"])
+driver.quit()
+                            </div>
+                            <p><strong>Try It:</strong> Use XPath (<code>//article[@class='product_pod']//h3/a</code>) to scrape titles from Books to Scrape.</p>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section1-8">
+                        <h1 onclick="toggleSection(this)">Section 1.8: Advanced CSS Scraping</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Scrape external stylesheets or dynamic styles.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+import requests
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/")
+css_link = driver.find_element(By.TAG_NAME, "link").get_attribute("href")
+css_content = requests.get(css_link).text
+print("CSS content snippet:", css_content[:200])
+driver.quit()
+                            </div>
+                            <p><strong>Try It:</strong> Scrape the external CSS file URL from Quotes to Scrape.</p>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section1-9">
+                        <h1 onclick="toggleSection(this)">Section 1.9: Advanced JS Scraping</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Scrape JS-generated content and APIs.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from seleniumwire import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/js/")
+# Intercept requests
+for request in driver.requests:
+    if request.response and "json" in request.url:
+        print("JSON API:", request.url)
+driver.quit()
+                            </div>
+                            <p><strong>Try It:</strong> Scrape a JS variable with <code>driver.execute_script("return window.someVar;")</code> on a dynamic site.</p>
+                            <p><strong>Note:</strong> Requires <code>pip install seleniumwire</code> for network interception.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="section2">
+                <h1 onclick="toggleSection(this)">Section 2: Selenium</h1>
+                <div class="section-content">
+                    <h2>What is Selenium?</h2>
+                    <p>Selenium is like a robot that controls your browser (Chrome) to visit sites, click things, or scrape data.</p>
+
+                    <h2>What You Need</h2>
+                    <ol>
+                        <li>Python: You have it.</li>
+                        <li>Selenium: <code>pip install selenium</code></li>
+                        <li>WebDriver Manager: <code>pip install webdriver-manager</code></li>
+                        <li>Chrome: Installed.</li>
+                    </ol>
+
+                    <h2>First Code</h2>
+                    <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("https://www.google.com")
+print("Page Title:", driver.title)
+driver.quit()
+                    </div>
+                    <p><strong>Try It:</strong> Run this—Chrome opens Google!</p>
+
+                    <div class="section" id="section2-1">
+                        <h1 onclick="toggleSection(this)">Section 2.1: Finding Elements</h1>
+                        <div class="section-content">
+                            <h2>How It Works</h2>
+                            <p>Selenium uses locators to find tags—like a map to treasures.</p>
+
+                            <h2>Locators</h2>
+                            <ul>
+                                <li><code>By.ID</code>: Unique ID.</li>
+                                <li><code>By.CLASS_NAME</code>: Class name.</li>
+                                <li><code>By.TAG_NAME</code>: Tag type.</li>
+                                <li><code>By.CSS_SELECTOR</code>: CSS rules.</li>
+                                <li><code>By.XPATH</code>: Path-like.</li>
+                            </ul>
+
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/")
+quotes = driver.find_elements(By.CSS_SELECTOR, "div.quote")
+for quote in quotes:
+    text = quote.find_element(By.CSS_SELECTOR, "span.text").text
+    author = quote.find_element(By.CSS_SELECTOR, "small.author").text
+    print(f"Quote: {text}, Author: {author}")
+driver.quit()
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section2-2">
+                        <h1 onclick="toggleSection(this)">Section 2.2: Navigation</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Learn to navigate between pages and handle browser actions.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/")
+driver.find_element(By.CSS_SELECTOR, "a[href='/page/2/']").click()
+print("Page 2 Title:", driver.title)
+driver.back()
+print("Back to Page 1 Title:", driver.title)
+driver.quit()
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section2-3">
+                        <h1 onclick="toggleSection(this)">Section 2.3: Waiting Smartly</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Use explicit waits to handle dynamic content.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/js/")
+wait = WebDriverWait(driver, 10)
+quote = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "quote")))
+print("First Quote:", quote.text)
+driver.quit()
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section2-4">
+                        <h1 onclick="toggleSection(this)">Section 2.4: Interacting</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Interact with forms and buttons.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/login")
+driver.find_element(By.ID, "username").send_keys("user")
+driver.find_element(By.ID, "password").send_keys("pass")
+driver.find_element(By.CSS_SELECTOR, "input[type='submit']").click()
+print("Logged in, Title:", driver.title)
+driver.quit()
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section2-5">
+                        <h1 onclick="toggleSection(this)">Section 2.5: Intermediate Skills</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Handle frames and popups.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://the-internet.herokuapp.com/iframe")
+driver.switch_to.frame("mce_0_ifr")
+text = driver.find_element(By.ID, "tinymce").text
+print("Iframe Text:", text)
+driver.switch_to.default_content()
+driver.quit()
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section2-6">
+                        <h1 onclick="toggleSection(this)">Section 2.6: Advanced Selenium</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Execute JavaScript and handle complex scenarios.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/js/")
+driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+print("Scrolled to bottom!")
+driver.quit()
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section" id="section2-7">
+                        <h1 onclick="toggleSection(this)">Section 2.7: Full Project</h1>
+                        <div class="section-content">
+                            <h2>Goal</h2>
+                            <p>Scrape multiple pages and save data.</p>
+                            <h2>Example</h2>
+                            <div class="code-block">
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service)
+driver.get("http://quotes.toscrape.com/")
+quotes_data = []
+while True:
+    quotes = driver.find_elements(By.CLASS_NAME, "quote")
+    for quote in quotes:
+        text = quote.find_element(By.CLASS_NAME, "text").text
+        author = quote.find_element(By.CLASS_NAME, "author").text
+        quotes_data.append({"text": text, "author": author})
+    try:
+        driver.find_element(By.CSS_SELECTOR, "li.next a").click()
+    except:
+        break
+print("Collected Quotes:", len(quotes_data))
+driver.quit()
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer" id="footer" style="display: none;">
+        <p>© 2025 My Selenium Learning Journey. All rights reserved.</p>
+    </div>
+
+    <script>
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle("hidden");
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector(".sidebar");
+            sidebar.classList.toggle("active");
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll(".section-content");
+            sections.forEach((section, index) => {
+                if (index !== 0) section.classList.add("hidden");
+            });
+
+            // Handle form submission
+            const form = document.getElementById("emailForm");
+            form.addEventListener("submit", function(event) {
+                event.preventDefault(); // Prevent default form submission
+                const email = document.getElementById("emailInput").value;
+                if (email) {
+                    // Hide popup and show content
+                    document.getElementById("popupOverlay").style.display = "none";
+                    document.getElementById("mainContent").style.display = "block";
+                    document.getElementById("footer").style.display = "block";
+
+                    // Ensure smooth scrolling after content is visible
+                    setTimeout(() => {
+                        const hash = window.location.hash;
+                        if (hash) {
+                            const target = document.querySelector(hash);
+                            if (target) {
+                                target.scrollIntoView({ behavior: "smooth" });
+                            }
+                        }
+                    }, 100); // Small delay to ensure DOM is updated
+
+                    // Simulate sending email (mailto will open email client)
+                    const mailtoLink = `mailto:farhan.learning10237@gmail.com?subject=New Email Submission&body=Email: ${email}`;
+                    window.location.href = mailtoLink;
+                } else {
+                    alert("Please enter a valid email address.");
+                }
+            });
+
+            // Ensure sidebar links work after content is visible
+            const sidebarLinks = document.querySelectorAll(".sidebar a");
+            sidebarLinks.forEach(link => {
+                link.addEventListener("click", function(event) {
+                    const mainContent = document.getElementById("mainContent");
+                    if (mainContent.style.display === "none") {
+                        return; // Do nothing if content is hidden
+                    }
+                    const targetId = this.getAttribute("href");
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        event.preventDefault(); // Prevent default if we handle it
+                        targetElement.scrollIntoView({ behavior: "smooth" });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
